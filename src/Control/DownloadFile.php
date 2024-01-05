@@ -15,7 +15,7 @@ abstract class DownloadFile extends Controller
      * @var array
      */
     private static $allowed_actions = [
-        'index' => false,
+        'index' => true,
     ];
 
     /**
@@ -33,6 +33,7 @@ abstract class DownloadFile extends Controller
         $header->addHeader('Content-Disposition', 'attachment; filename=' . $this->getFilename());
         $header->addHeader('X-Robots-Tag', 'noindex');
         // return data
+        return $this->getFileData();
     }
 
     protected function getFileData(): string

@@ -3,28 +3,31 @@
 namespace Sunnysideup\Download\Control\Model;
 
 use Closure;
-use DOMDocument;
-use SilverStripe\Control\ContentNegotiator;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
-use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Flushable;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\FieldType\DBField;
-use SimpleXMLElement;
-use Sunnysideup\Pricespy\Providers\PriceSpyDataProvider;
 
 /**
- * Class \Sunnysideup\Pricespy\Model\PriceSpyCache.
  *
  * @property string $Title
  * @property string $Link
  * @property int $ProductCount
  */
-class CachedDownload extends DataObject
+class CachedDownload extends DataObject implements Flushable
 {
+    public static function flush()
+    {
+        $list = self::get();
+        foreach ($list as $item) {
+            $item->delete();
+        }
+    }
+
     private static $max_age_in_minutes = 60;
     private static $table_name = 'CachedDownload';
 
@@ -57,7 +60,7 @@ class CachedDownload extends DataObject
         $obj = self::get()->filter(['MyLink' => $link])->first();
         if (!$obj) {
             $obj = self::create();
-            $obj->Link = $link;
+            $obj->MyLink = $link;
             $obj->write();
         }
 
@@ -83,7 +86,7 @@ class CachedDownload extends DataObject
 
                 LiteralField::create(
                     'ReviewCurrentOne',
-                    '<p class="message good"><a href="' . $this->Link . '">Review current version</a></p>',
+                    '<p class="message good"><a href="' . $this->MyLink . '">Review current version</a></p>',
                 ),
             ]
         );
@@ -94,9 +97,7 @@ class CachedDownload extends DataObject
     public function onBeforeWrite()
     {
         parent::onBeforeWrite();
-        if($this->exists()) {
-            @unlink($this->getFilePath());
-        }
+        $this->deleteFile();
     }
 
     public function getLastEditedNice()
@@ -104,11 +105,10 @@ class CachedDownload extends DataObject
         return DBField::create_field(DBDatetime::class, $this->LastEdited)->ago();
     }
 
-    public function WarmCache($data)
+    public function WarmCache(string $data): string
     {
-        $data = $this->getDataAsArray();
         file_put_contents($this->getFilePath(), $data);
-        return file_get_contents($this->getFilePath(), $data);
+        return file_get_contents($this->getFilePath());
     }
 
     protected function getAbsoluteLink()
@@ -148,9 +148,23 @@ class CachedDownload extends DataObject
 
     protected function getFilePath(): string
     {
-        return Controller::join_links(Director::baseFolder(), PUBLIC_DIR, $this->Link);
+        return Controller::join_links(Director::baseFolder(), PUBLIC_DIR, $this->MyLink);
     }
 
+
+    public function onBeforeDelete()
+    {
+        parent::onBeforeDelete();
+        $this->deleteFile();
+    }
+
+    public function deleteFile()
+    {
+        $path = $this->getFilePath();
+        if(file_exists($path) && is_file($path)) {
+            unlink($path);
+        }
+    }
 
 
 }
