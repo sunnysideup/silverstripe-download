@@ -1,0 +1,41 @@
+{
+    "name": "jq",
+    "description": "Helps you set up a basic download controller",
+    "type": "silverstripe-vendormodule",
+    "keywords": [
+        "silverstripe",
+        "CMS"
+    ],
+    "license": "BSD-3-Clause",
+    "require": {
+        "silverstripe/framework": "^5.0",
+        "silverstripe/admin": "^2.0"
+    },
+    "require-dev": {
+        "sunnysideup/sswebpack_engine_only": "dev-master",
+        "silverleague/ideannotator": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "SunnysideupDownload\\": "src/"
+        }
+    },
+    "extra": {
+        "expose": [
+            "client/dist"
+        ]
+    },
+    "bin": [
+        "bin/sake-npm-build-download.sh",
+        "bin/sake-npm-watch-download.sh"
+    ],
+    "authors": [
+        {
+            "name": "Nicolaas Thiemen Francken",
+            "email": "modules@sunnysideup.co.nz",
+            "role": "lead developer"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
