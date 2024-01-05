@@ -9,6 +9,7 @@ use SilverStripe\Core\Flushable;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\FieldType\DBField;
 
@@ -22,9 +23,11 @@ class CachedDownload extends DataObject implements Flushable
 {
     public static function flush()
     {
-        $list = self::get();
-        foreach ($list as $item) {
-            $item->delete();
+        if(DB::get_schema()->hasTable('CachedDownload')) {
+            $list = self::get();
+            foreach ($list as $item) {
+                $item->delete();
+            }
         }
     }
 
