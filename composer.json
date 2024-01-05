@@ -1,5 +1,5 @@
 {
-    "name": "jq",
+    "name": "sunnysideup/download",
     "description": "Helps you set up a basic download controller",
     "type": "silverstripe-vendormodule",
     "keywords": [
