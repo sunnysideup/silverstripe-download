@@ -1,12 +1,13 @@
 <?php
 
-namespace Sunnysideup\Download;
+namespace Sunnysideup\Download\Control;
 
 use SilverStripe\Control\ContentNegotiator;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\View\SSViewer;
+use Sunnysideup\Download\Control\Model\CachedDownload;
 
 abstract class DownloadFile extends Controller
 {
@@ -32,7 +33,14 @@ abstract class DownloadFile extends Controller
         $header->addHeader('Content-Disposition', 'attachment; filename=' . $this->getFilename());
         $header->addHeader('X-Robots-Tag', 'noindex');
         // return data
-        return $this->renderWith(static::class);
+    }
+
+    protected function getFileData(): string
+    {
+        return CachedDownload::inst($this->getFilename())
+            ->getData(
+                function () {return $this->renderWith(static::class);}
+            );
     }
 
     protected function getContentType(): string
