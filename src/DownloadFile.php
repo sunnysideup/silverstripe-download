@@ -42,12 +42,8 @@ abstract class DownloadFile extends Controller
 
     protected function getFileName(): string
     {
-        return 'download.' . $this->getExtension();
+        return basename($this->request->getURL(true));
     }
 
-    protected function getExtension(): string
-    {
-        return '.txt';
-    }
 
 }
