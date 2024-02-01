@@ -55,7 +55,7 @@ class CachedDownload extends DataObject implements Flushable
 
     private static $singular_name = 'Cached Download';
 
-    private static $plural_name = 'Cached Download';
+    private static $plural_name = 'Cached Downloads';
 
     private static $summary_fields = [
         'Title' => 'Type',
