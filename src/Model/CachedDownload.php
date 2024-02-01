@@ -36,6 +36,7 @@ class CachedDownload extends DataObject implements Flushable
     }
 
     private static $max_age_in_minutes = 60;
+
     private static $table_name = 'CachedDownload';
 
     private static $db = [
@@ -86,15 +87,18 @@ class CachedDownload extends DataObject implements Flushable
                     'LastEditedNice',
                     'Cached created',
                 ),
-
-                LiteralField::create(
-                    'CreateNewOne',
-                    '<p class="message warning">Create a new cache by writing this one.</p>',
+                ReadonlyField::create(
+                    'AgeOfFile',
+                    'Age of file',
+                    $this->getFileLastUpdated()
                 ),
-
                 LiteralField::create(
                     'ReviewCurrentOne',
                     '<p class="message good"><a href="' . $this->MyLink . '">Review current version</a></p>',
+                ),
+                LiteralField::create(
+                    'CreateNewOne',
+                    '<p class="message warning">Create a new cache by deleting this cache.</p>',
                 ),
             ]
         );
@@ -156,7 +160,7 @@ class CachedDownload extends DataObject implements Flushable
 
     protected function getFilePath(): string
     {
-        return Controller::join_links(Director::baseFolder(), PUBLIC_DIR, $this->MyLink);
+        return self::file_path($this->MyLink);
     }
 
 
@@ -164,6 +168,16 @@ class CachedDownload extends DataObject implements Flushable
     {
         parent::onBeforeDelete();
         $this->deleteFile();
+    }
+
+    public function canEdit($member = null)
+    {
+        return false;
+    }
+
+    public function canCreate($member = null, $context = [])
+    {
+        return false;
     }
 
     public function deleteFile()

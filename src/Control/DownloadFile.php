@@ -38,7 +38,7 @@ abstract class DownloadFile extends Controller
 
     protected function getFileData(): string
     {
-        return CachedDownload::inst($this->getFilename())
+        return CachedDownload::inst($this->getFilename(), $this->getTitle())
             ->getData(
                 function () {return $this->renderWith(static::class);}
             );
