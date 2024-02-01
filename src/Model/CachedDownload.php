@@ -21,6 +21,10 @@ use SilverStripe\ORM\FieldType\DBField;
  */
 class CachedDownload extends DataObject implements Flushable
 {
+    public static function file_path(string $fileName): string
+    {
+        return Controller::join_links(Director::baseFolder(), PUBLIC_DIR, $fileName);
+    }
     public static function flush()
     {
         if(DB::get_schema()->hasTable('CachedDownload')) {
@@ -129,7 +133,7 @@ class CachedDownload extends DataObject implements Flushable
      */
     public function getData(Closure $callBackIfEmpty): string
     {
-        $maxCacheAge = strtotime('NOW') - ($this->Config()->max_age_in_minutes * 60);
+        $maxCacheAge = strtotime('now') - ($this->Config()->max_age_in_minutes * 60);
         if (strtotime((string) $this->LastEdited) > $maxCacheAge) {
             $path = $this->getFilePath();
             if (file_exists($path)) {
