@@ -54,5 +54,10 @@ abstract class DownloadFile extends Controller
         return basename($this->request->getURL(true));
     }
 
+    protected function getTitle(): string
+    {
+        return 'Download';
+    }
+
 
 }

@@ -62,12 +62,13 @@ class CachedDownload extends DataObject implements Flushable
         'LastEdited.Ago' => 'Last updated',
     ];
 
-    public static function inst(string $link): self
+    public static function inst(string $link, ?string $title = ''): self
     {
         $obj = self::get()->filter(['MyLink' => $link])->first();
         if (!$obj) {
             $obj = self::create();
             $obj->MyLink = $link;
+            $obj->Title = $title ?: $link;
             $obj->write();
         }
 
