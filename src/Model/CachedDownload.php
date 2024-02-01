@@ -85,12 +85,17 @@ class CachedDownload extends DataObject implements Flushable
 
                 ReadonlyField::create(
                     'LastEditedNice',
-                    'Cached created',
+                    'When was cache created?',
                 ),
                 ReadonlyField::create(
                     'AgeOfFile',
-                    'Age of file',
+                    'When was the file written?',
                     $this->getFileLastUpdated()
+                ),
+                ReadonlyField::create(
+                    'SizeOfFile',
+                    'What is the size of the file?',
+                    $this->getSizeOfFile()
                 ),
                 LiteralField::create(
                     'ReviewCurrentOne',
@@ -157,6 +162,11 @@ class CachedDownload extends DataObject implements Flushable
         return date('Y-m-d H:i', filemtime($this->getFilePath()));
     }
 
+    public function getSizeOfFile(): string
+    {
+        return $this->formatFileSize(filesize($this->getFilePath()));
+    }
+
 
     protected function getFilePath(): string
     {
@@ -188,5 +198,16 @@ class CachedDownload extends DataObject implements Flushable
         }
     }
 
+    protected function formatFileSize(int $bytes): string
+    {
+        if ($bytes < 1024) {
+            return $bytes . ' B';
+        }
+
+        $units = ['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+        $factor = floor(log($bytes, 1024));
+
+        return sprintf("%.2f %s", $bytes / pow(1024, $factor), $units[$factor - 1]);
+    }
 
 }
