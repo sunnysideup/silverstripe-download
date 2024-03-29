@@ -38,11 +38,32 @@ abstract class DownloadFile extends Controller
 
     protected function getFileData(): string
     {
-        return CachedDownload::inst($this->getFilename(), $this->getTitle())
-            ->getData(
-                function () {return $this->renderWith(static::class);}
-            );
+        return CachedDownload::inst(
+            $this->getFilename(),
+            $this->getTitle(),
+            $this->getMaxAgeInMinutes(),
+            $this->getDeleteOnFlush(),
+        )
+            ->getData($this->getCallbackToCreateDownloadFile());
     }
+
+    protected function getCallbackToCreateDownloadFile()
+    {
+        return function () {
+            return $this->renderWith(static::class);
+        };
+    }
+
+    protected function getMaxAgeInMinutes(): ?int
+    {
+        return null; // set to null to use default
+    }
+
+    protected function getDeleteOnFlush(): ?bool
+    {
+        return null; // set to null to use default
+    }
+
 
     protected function getContentType(): string
     {

@@ -3,6 +3,7 @@
 namespace Sunnysideup\Download\Control\Model;
 
 use Closure;
+use SilverStripe\Assets\File;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Flushable;
@@ -12,6 +13,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\Versioned\Versioned;
 
 /**
  *
@@ -23,14 +25,32 @@ class CachedDownload extends DataObject implements Flushable
 {
     public static function file_path(string $fileName): string
     {
-        return Controller::join_links(Director::baseFolder(), PUBLIC_DIR, $fileName);
+        return Controller::join_links(PUBLIC_PATH, $fileName);
+    }
+
+    public static function register_download_asset_from_stream($stream, string $relativePathFromAssets, ?string $title = '', ?int $maxAgeInMinutes = 0, ?bool $deleteOnFlush = true): File
+    {
+        $file = File::get()->filter(['Filename' => $relativePathFromAssets])->first();
+        if(!$file) {
+            $file = File::create();
+        } else {
+            $file->setFromStream($stream, $relativePathFromAssets);
+            $file->writeToStage(Versioned::DRAFT);
+            $file->publishRecursive();
+        }
+        $fullLink = Controller::join_links(ASSETS_DIR, $file->getFilename());
+        self::inst($fullLink, $title, $maxAgeInMinutes, $deleteOnFlush);
+
+        return $file;
     }
     public static function flush()
     {
         if(DB::get_schema()->hasTable('CachedDownload')) {
             $list = self::get();
             foreach ($list as $item) {
-                $item->delete();
+                if($item->DeleteOnFlush) {
+                    $item->delete();
+                }
             }
         }
     }
@@ -42,6 +62,8 @@ class CachedDownload extends DataObject implements Flushable
     private static $db = [
         'Title' => 'Varchar(255)',
         'MyLink' => 'Varchar(255)',
+        'DeleteOnFlush' => 'Boolean(1)',
+        'MaxAgeInMinutes' => 'Int',
     ];
 
     private static $default_sort = [
@@ -63,15 +85,17 @@ class CachedDownload extends DataObject implements Flushable
         'LastEdited.Ago' => 'Last updated',
     ];
 
-    public static function inst(string $link, ?string $title = ''): self
+    public static function inst(string $link, ?string $title = '', ?int $maxAgeInMinutes = 0, ?bool $deleteOnFlush = true): self
     {
         $obj = self::get()->filter(['MyLink' => $link])->first();
         if (!$obj) {
             $obj = self::create();
-            $obj->MyLink = $link;
-            $obj->Title = $title ?: $link;
-            $obj->write();
         }
+        $obj->MyLink = $link;
+        $obj->Title = $title ?: $link;
+        $obj->MaxAgeInMinutes = $maxAgeInMinutes;
+        $obj->DeleteOnFlush = $deleteOnFlush;
+        $obj->write();
 
         return $obj;
     }
@@ -143,7 +167,8 @@ class CachedDownload extends DataObject implements Flushable
      */
     public function getData(Closure $callBackIfEmpty): string
     {
-        $maxCacheAge = strtotime('now') - ($this->Config()->max_age_in_minutes * 60);
+        $maxAgeInSeconds = ($this->MaxAgeInMinutes ?: $this->Config()->max_age_in_minutes) * 60;
+        $maxCacheAge = strtotime('now') - $maxAgeInSeconds;
         if (strtotime((string) $this->LastEdited) > $maxCacheAge) {
             $path = $this->getFilePath();
             if (file_exists($path)) {

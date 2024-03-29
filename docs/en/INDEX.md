@@ -1,6 +1,6 @@
 # How to setup:
 
-### 1. extend `DownloadFile` to add extra functionality
+### 1. extend `DownloadFile` to add extra functionality / configure how you see fit.
 
 ```php
 namespace Website\App\Control;
@@ -8,12 +8,24 @@ use Sunnysideup\Download\DownloadFile;
 
 class MyDownloadFile extends DownloadFile
 {
-    /**
-     * @var array
-     */
-    private static $allowed_actions = [
-        'index' => false,
-    ];
+
+
+    protected function getCallbackToCreateDownloadFile(): function
+    {
+        return function() {
+            return $this->renderWith(static::class);
+        };
+    }
+
+    protected function getMaxAgeInMinutes() : int
+    {
+        return null; // set to null to use default
+    }
+
+    protected function getDeleteOnFlush() : ?bool
+    {
+        return null; // set to null to use default
+    }
 
     // more fx goes here...
 
@@ -42,8 +54,8 @@ class MyDownloadFile extends DownloadFile
 Name: app_downloads_routes
 ---
 SilverStripe\Control\Director:
-  rules:
-    mydownload.csv: Website\App\Control\MyDownloadFile
+    rules:
+        mydownload.csv: Website\App\Control\MyDownloadFile
 ```
 
 ### 3. add a template in `themes/mytheme/templates/Website/App/Control/MyDownloadFile.ss`
