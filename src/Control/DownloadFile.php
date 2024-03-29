@@ -30,6 +30,7 @@ abstract class DownloadFile extends Controller
         $header->addHeader('Pragma', 'no-cache');
         $header->addHeader('Expires', 0);
         $header->addHeader('Content-Type', $this->getContentType());
+        // $header->addHeader('Content-Length', filesize($file))
         $header->addHeader('Content-Disposition', 'attachment; filename=' . $this->getFilename());
         $header->addHeader('X-Robots-Tag', 'noindex');
         // return data
@@ -39,7 +40,7 @@ abstract class DownloadFile extends Controller
     protected function getFileData(): string
     {
         return CachedDownload::inst(
-            $this->getFilename(),
+            $this->getPath(),
             $this->getTitle(),
             $this->getMaxAgeInMinutes(),
             $this->getDeleteOnFlush(),
@@ -72,7 +73,12 @@ abstract class DownloadFile extends Controller
 
     protected function getFileName(): string
     {
-        return basename($this->request->getURL(true));
+        return basename($this->getRequest()->getURL(true));
+    }
+
+    protected function getPath(): string
+    {
+        return basename($this->getRequest()->getURL(true));
     }
 
     protected function getTitle(): string
