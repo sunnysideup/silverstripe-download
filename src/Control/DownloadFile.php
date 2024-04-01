@@ -4,6 +4,9 @@ namespace Sunnysideup\Download\Control;
 
 use SilverStripe\Control\ContentNegotiator;
 use SilverStripe\Control\Controller;
+use SilverStripe\Control\HTTPRequest;
+use SilverStripe\Control\HTTPResponse;
+use SilverStripe\Control\Middleware\HTTPCacheControlMiddleware;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\View\SSViewer;
@@ -18,7 +21,9 @@ abstract class DownloadFile extends Controller
         'index' => true,
     ];
 
+
     /**
+     * returns the file.
      * @return mixed
      */
     public function index()
@@ -29,26 +34,37 @@ abstract class DownloadFile extends Controller
         $header = $this->getResponse();
         $header->addHeader('Pragma', 'no-cache');
         $header->addHeader('Expires', 0);
-        $header->addHeader('Content-Type', $this->getContentType());
-        // $header->addHeader('Content-Length', filesize($file))
-        $header->addHeader('Content-Disposition', 'attachment; filename=' . $this->getFilename());
         $header->addHeader('X-Robots-Tag', 'noindex');
+        $header->addHeader('cache-control', 'no-cache, no-store, must-revalidate');
+        HTTPCacheControlMiddleware::singleton()->disableCache();
         // return data
-        return $this->getFileData();
+        return HTTPRequest::send_file($this->getFileData(), $this->getFileName(), $this->getContentType());
     }
 
+    /**
+     * gets the file data from cache or live
+     *
+     * @return string
+     */
     protected function getFileData(): string
     {
-        return CachedDownload::inst(
-            $this->getPath(),
+        $obj = CachedDownload::inst(
+            $this->getFileUrl(),
             $this->getTitle(),
-            $this->getMaxAgeInMinutes(),
-            $this->getDeleteOnFlush(),
-        )
-            ->getData($this->getCallbackToCreateDownloadFile());
+        );
+        $obj->DeleteOnFlush = $this->getDeleteOnFlush();
+        $obj->MaxAgeInMinutes = $this->getMaxAgeInMinutes();
+        $obj->HasControlledAccess = $this->getHasControlledAccess();
+        $obj->write();
+        return $obj->getData($this->getCallbackToCreateDownloadFile(), $this->getFileName());
     }
 
-    protected function getCallbackToCreateDownloadFile()
+    /**
+     * function (closure) that runs when there is nothing saved on file.
+     *
+     * @return callable
+     */
+    protected function getCallbackToCreateDownloadFile(): callable
     {
         return function () {
             return $this->renderWith(static::class);
@@ -65,6 +81,11 @@ abstract class DownloadFile extends Controller
         return null; // set to null to use default
     }
 
+    protected function getHasControlledAccess(): ?bool
+    {
+        return null; // set to null to use default
+    }
+
 
     protected function getContentType(): string
     {
@@ -73,18 +94,16 @@ abstract class DownloadFile extends Controller
 
     protected function getFileName(): string
     {
-        return basename($this->getRequest()->getURL(true));
+        return basename($this->getFileUrl());
     }
 
-    protected function getPath(): string
+    protected function getFileUrl(): string
     {
-        return basename($this->getRequest()->getURL(true));
+        return $this->getRequest()->getURL(false);
     }
 
     protected function getTitle(): string
     {
         return 'Download';
     }
-
-
 }
