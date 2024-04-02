@@ -16,6 +16,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\ORM\FieldType\DBHTMLVarchar;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\InheritedPermissions;
 use SilverStripe\Security\Permission;
@@ -108,8 +109,6 @@ class CachedDownload extends DataObject implements Flushable
     private static $summary_fields = [
         'Title' => 'Name',
         'MyLink' => 'Link',
-        'IsExpired' => 'Last updated',
-        'MaxAgeInMinutes' => 'Max age in minutes',
         'HasControlledAccess.Nice' => 'Controlled Access',
     ];
 
@@ -146,8 +145,12 @@ class CachedDownload extends DataObject implements Flushable
                     'CreateNewOne',
                     '<p class="message warning">Create a new cache by deleting this cache.</p>',
                 ),
+
             ]
         );
+        if(! $this->HasControlledAccess) {
+            $fields->removeByName('ControlledAccessFileID');
+        }
 
         return $fields;
     }
@@ -155,7 +158,12 @@ class CachedDownload extends DataObject implements Flushable
     public function onBeforeWrite()
     {
         parent::onBeforeWrite();
-        $this->deleteFile();
+        if($this->IsExperired()) {
+            $this->deleteFile();
+        }
+        if($this->IsExperiredFile()) {
+            $this->deleteFile();
+        }
     }
 
     public function getLastEditedNice()
@@ -171,18 +179,16 @@ class CachedDownload extends DataObject implements Flushable
      *
      * @return string
      */
-    public function getData(callable $callBackIfEmpty, ?string $fileNameToSave = ''): string
+    public function getData(callable $callBackIfEmpty, string $fileNameToSave): string
     {
+        // check for latest data!
+        $this->write();
         $path = $this->getFilePath(true);
         if ($path && file_exists($path)) {
-            if($this->IsExperired()) {
+            if($this->ControlledAccessFile()->Name !== $fileNameToSave) {
                 $this->deleteFile();
             } else {
-                if($this->IsExperiredFile($path)) {
-                    $this->deleteFile();
-                } else {
-                    return file_get_contents($path);
-                }
+                return file_get_contents($path);
             }
         }
         $data = $callBackIfEmpty();
@@ -197,11 +203,17 @@ class CachedDownload extends DataObject implements Flushable
     public function WarmCache(string $data, ?string $fileNameToSave = ''): string
     {
         if($this->HasControlledAccess) {
-            $fileNameToSave ?: str_replace('/', '--', $this->MyLink);
-            $file = CreateProtectedDownloadAsset::register_download_asset_from_string($data, $fileNameToSave, $this->Title);
-            $this->ControlledAccessFileID = $file->ID;
-            $this->write();
-            self::inst($this->MyLink, $this->Title);
+            // file should have already been created during callback!
+            $file = CreateProtectedDownloadAsset::get_file_from_file_name($fileNameToSave);
+            if($file && $file->exists()) {
+                // all done
+            } else {
+                $file = CreateProtectedDownloadAsset::register_download_asset_from_string($data, $fileNameToSave);
+            }
+            if($file && $file->exists()) {
+                $this->ControlledAccessFileID = $file->ID;
+                $this->write();
+            }
             return $data;
         } else {
             $filePath = $this->getFilePath();
@@ -223,17 +235,22 @@ class CachedDownload extends DataObject implements Flushable
     {
         $maxAgeInSeconds = ($this->MaxAgeInMinutes ?: $this->Config()->max_age_in_minutes) * 60;
         $maxCacheAge = strtotime('now') - $maxAgeInSeconds;
-
-        return strtotime((string) $this->LastEdited) > $maxCacheAge;
+        return $this->LastEdited && strtotime((string) $this->LastEdited) < $maxCacheAge;
     }
 
 
-    public function IsExperiredFile(string $path): bool
+    public function IsExperiredFile(?string $path = ''): bool
     {
-        $maxAgeInSeconds = ($this->MaxAgeInMinutes ?: $this->Config()->max_age_in_minutes) * 60;
-        $maxCacheAge = strtotime('now') - $maxAgeInSeconds;
-        $timeChange = filemtime($path);
-        return $timeChange > $maxCacheAge;
+        if(! $path) {
+            $path = $this->getFilePath();
+        }
+        if(file_exists($path) && is_file($path)) {
+            $maxAgeInSeconds = ($this->MaxAgeInMinutes ?: $this->Config()->max_age_in_minutes) * 60;
+            $maxCacheAge = strtotime('now') - $maxAgeInSeconds;
+            $timeChange = filemtime($path);
+            return $timeChange < $maxCacheAge;
+        }
+        return false;
     }
 
     public function getAbsoluteLink(): string
@@ -288,6 +305,8 @@ class CachedDownload extends DataObject implements Flushable
         if($file && $file->exists()) {
             $file->doArchive();
         }
+        $this->ControlledAccessFileID = 0;
+        $this->write();
     }
 
     protected function formatFileSize(int $bytes): string
@@ -310,14 +329,14 @@ class CachedDownload extends DataObject implements Flushable
         return true;
     }
 
-    protected function getFilePath(?bool $alcoCheckForCanView = false): string
+    protected function getFilePath(?bool $alsoCheckForCanView = false): string
     {
         $path = '';
         if($this->HasControlledAccess) {
             if($this->ControlledAccessFileID) {
                 $file = $this->ControlledAccessFile();
                 if($file && $file->exists()) {
-                    if($alcoCheckForCanView === false || $file->canView()) {
+                    if($alsoCheckForCanView === false || $file->canView()) {
                         $path = FilePathCalculator::get_path($file);
                     }
                 }

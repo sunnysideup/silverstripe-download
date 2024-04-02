@@ -37,8 +37,13 @@ abstract class DownloadFile extends Controller
         $header->addHeader('X-Robots-Tag', 'noindex');
         $header->addHeader('cache-control', 'no-cache, no-store, must-revalidate');
         HTTPCacheControlMiddleware::singleton()->disableCache();
+
         // return data
-        return HTTPRequest::send_file($this->getFileData(), $this->getFileName(), $this->getContentType());
+        return HTTPRequest::send_file(
+            $this->getFileData(),
+            $this->getFileName(),
+            $this->getContentType()
+        );
     }
 
     /**
@@ -48,6 +53,12 @@ abstract class DownloadFile extends Controller
      */
     protected function getFileData(): string
     {
+        $obj = $this->findOrCreateCachedDownload();
+        return $obj->getData($this->getCallbackToCreateDownloadFile(), $this->getFileName());
+    }
+
+    protected function findOrCreateCachedDownload(): CachedDownload
+    {
         $obj = CachedDownload::inst(
             $this->getFileUrl(),
             $this->getTitle(),
@@ -56,7 +67,7 @@ abstract class DownloadFile extends Controller
         $obj->MaxAgeInMinutes = $this->getMaxAgeInMinutes();
         $obj->HasControlledAccess = $this->getHasControlledAccess();
         $obj->write();
-        return $obj->getData($this->getCallbackToCreateDownloadFile(), $this->getFileName());
+        return $obj;
     }
 
     /**
