@@ -29,10 +29,6 @@
             "client/dist"
         ]
     },
-    "bin": [
-        "bin/sake-npm-build-download.sh",
-        "bin/sake-npm-watch-download.sh"
-    ],
     "authors": [
         {
             "name": "Nicolaas Thiemen Francken",
