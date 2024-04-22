@@ -305,8 +305,8 @@ class CachedDownload extends DataObject implements Flushable
         if($file && $file->exists()) {
             $file->doArchive();
         }
-        $this->ControlledAccessFileID = 0;
-        $this->write();
+        // do not repeat...
+        DB::query('UPDATE "CachedDownload" SET "ControlledAccessFileID" = 0 WHERE "ID" = ' . $this->ID);
     }
 
     protected function formatFileSize(int $bytes): string
