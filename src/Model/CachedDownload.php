@@ -220,7 +220,7 @@ class CachedDownload extends DataObject implements Flushable
             if($filePath) {
                 if($this->createDirRecursively(dirname($filePath))) {
                     file_put_contents($filePath, $data);
-                    return file_get_contents($filePath);
+                    return $data;
                 }
             } else {
                 user_error('file path is empty');
