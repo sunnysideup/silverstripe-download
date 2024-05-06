@@ -224,7 +224,7 @@ class CachedDownload extends DataObject implements Flushable
             if($filePath) {
                 if($this->createDirRecursively(dirname($filePath))) {
                     file_put_contents($filePath, $data);
-                    return file_get_contents($filePath);
+                    return $data;
                 }
             } else {
                 user_error('file path is empty');
@@ -309,8 +309,8 @@ class CachedDownload extends DataObject implements Flushable
         if($file && $file->exists()) {
             $file->doArchive();
         }
-        $this->ControlledAccessFileID = 0;
-        $this->write();
+        // do not repeat...
+        DB::query('UPDATE "CachedDownload" SET "ControlledAccessFileID" = 0 WHERE "ID" = ' . $this->ID);
     }
 
     protected function formatFileSize(int $bytes): string
