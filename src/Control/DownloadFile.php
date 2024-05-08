@@ -37,12 +37,14 @@ abstract class DownloadFile extends Controller
         $header->addHeader('X-Robots-Tag', 'noindex');
         $header->addHeader('cache-control', 'no-cache, no-store, must-revalidate');
         HTTPCacheControlMiddleware::singleton()->disableCache();
-
         // return data
+        $data = $this->getFileData();
+        $fileName = $this->getFileName();
+        $contentType = $this->getContentType();
         return HTTPRequest::send_file(
-            $this->getFileData(),
-            $this->getFileName(),
-            $this->getContentType()
+            $data,
+            $fileName,
+            $contentType,
         );
     }
 
