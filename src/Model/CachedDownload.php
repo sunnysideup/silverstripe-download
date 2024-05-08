@@ -39,6 +39,10 @@ class CachedDownload extends DataObject implements Flushable
 
     protected static $assets_download_folder = '__protected_downloads';
 
+    private static $extensions = [
+        Versioned::class . '.versioned',
+    ];
+
     public static function file_path(string $fileName): string
     {
         return Controller::join_links(PUBLIC_PATH, $fileName);
