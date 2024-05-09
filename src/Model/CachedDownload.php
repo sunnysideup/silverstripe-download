@@ -33,10 +33,6 @@ use Sunnysideup\Download\Api\CreateProtectedDownloadAsset;
  */
 class CachedDownload extends DataObject implements Flushable
 {
-    private static $extensions = [
-        Versioned::class . '.versioned',
-    ];
-
     protected static $assets_download_folder = '__protected_downloads';
 
     private static $extensions = [
