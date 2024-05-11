@@ -146,6 +146,10 @@ class CachedDownload extends DataObject implements Flushable
                     '<p class="message good"><a href="' . $this->MyLink . '">Review current version</a></p>',
                 ),
                 LiteralField::create(
+                    'ReviewEarlierRecords',
+                    '<p class="message good"><a href="/admin/archive/Sunnysideup-Download-Control-Model-CachedDownload">Review earlier records</a></p>',
+                ),
+                LiteralField::create(
                     'CreateNewOne',
                     '<p class="message warning">Create a new cache by deleting this cache.</p>',
                 ),
