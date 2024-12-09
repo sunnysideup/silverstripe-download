@@ -12,7 +12,11 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\View\SSViewer;
 use Sunnysideup\Download\Control\Model\CachedDownload;
 
-abstract class DownloadFile extends Controller
+abstract /**
+ * Class \Sunnysideup\Download\Control\DownloadFile
+ *
+ */
+class DownloadFile extends Controller
 {
     /**
      * @var array

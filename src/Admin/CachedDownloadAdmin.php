@@ -5,6 +5,10 @@ namespace Sunnysideup\Download\Admin;
 use SilverStripe\Admin\ModelAdmin;
 use Sunnysideup\Download\Control\Model\CachedDownload;
 
+/**
+ * Class \Sunnysideup\Download\Admin\CachedDownloadAdmin
+ *
+ */
 class CachedDownloadAdmin extends ModelAdmin
 {
     private static $managed_models = [

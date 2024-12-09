@@ -26,10 +26,17 @@ use Sunnysideup\Download\Api\FilePathCalculator;
 use Sunnysideup\Download\Api\CreateProtectedDownloadAsset;
 
 /**
+ * Class \Sunnysideup\Download\Control\Model\CachedDownload
  *
+ * @property int $Version
  * @property string $Title
- * @property string $Link
- * @property int $ProductCount
+ * @property string $MyLink
+ * @property bool $DeleteOnFlush
+ * @property int $MaxAgeInMinutes
+ * @property bool $HasControlledAccess
+ * @property int $ControlledAccessFileID
+ * @method File ControlledAccessFile()
+ * @mixin Versioned
  */
 class CachedDownload extends DataObject implements Flushable
 {
