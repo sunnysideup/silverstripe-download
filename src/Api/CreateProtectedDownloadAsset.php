@@ -33,8 +33,8 @@ class CreateProtectedDownloadAsset
     public static function register_download_asset_from_local_path(string $fromPath, string $fileNameToSave): File
     {
         // only works if it is in assets folder!s
-        $tmpPath = Controller::join_links(ASSETS_PATH, rand(0, 9999999) . '-'.basename($fromPath));
-        if(file_exists($tmpPath)) {
+        $tmpPath = Controller::join_links(ASSETS_PATH, rand() . '-' . basename($fromPath));
+        if (file_exists($tmpPath)) {
             unlink($tmpPath);
         }
         rename($fromPath, $tmpPath);
@@ -42,7 +42,7 @@ class CreateProtectedDownloadAsset
         $folder = self::get_protected_download_files_folder();
         $filter = ['Name' => $fileNameToSave, 'ParentID' => $folder->ID];
         $file = File::get()->filter($filter)->first();
-        if(!$file || ! $file->exists()) {
+        if (!$file || ! $file->exists()) {
             $file = File::create();
             $file->setFromLocalFile($tmpPath, $fileNameToSave);
             $file->writeToStage(Versioned::DRAFT);
@@ -63,7 +63,7 @@ class CreateProtectedDownloadAsset
         $folder = self::get_protected_download_files_folder();
         $filter = ['Name' => $fileNameToSave, 'ParentID' => $folder->ID];
         $file = File::get()->filter($filter)->first();
-        if(!$file || ! $file->exists()) {
+        if (!$file || ! $file->exists()) {
             $file = File::create();
             $file->setFromString($string, $file->generateFilename());
             $file->writeToStage(Versioned::DRAFT);
@@ -90,12 +90,11 @@ class CreateProtectedDownloadAsset
         $fileOrFolder->CanViewType = InheritedPermissions::ONLY_THESE_USERS;
         $fileOrFolder->ShowInSearch = false;
         $fileOrFolder->ViewerGroups()->add(Permission::get_groups_by_permission('ADMIN')->first());
-        foreach($additionalValues as $key => $value) {
+        foreach ($additionalValues as $key => $value) {
             $fileOrFolder->{$key} = $value;
         }
         $fileOrFolder->writeToStage(Versioned::DRAFT);
         $fileOrFolder->publishRecursive();
         return $fileOrFolder;
     }
-
 }
