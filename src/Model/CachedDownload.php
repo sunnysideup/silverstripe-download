@@ -29,14 +29,21 @@ use Sunnysideup\Download\Api\CreateProtectedDownloadAsset;
  * Class \Sunnysideup\Download\Control\Model\CachedDownload
  *
  * @property int $Version
- * @property string $Title
- * @property string $MyLink
+ * @property ?string $Title
+ * @property ?string $MyLink
  * @property bool $DeleteOnFlush
  * @property int $MaxAgeInMinutes
  * @property bool $HasControlledAccess
  * @property int $ControlledAccessFileID
  * @method File ControlledAccessFile()
  * @mixin Versioned
+ * @mixin FileLinkTracking
+ * @mixin AssetControlExtension
+ * @mixin SiteTreeLinkTracking
+ * @mixin VersionedStateExtension
+ * @mixin RecursivePublishable
+ * @mixin DataObjectExtension
+ * @mixin FixBooleanSearchAsExtension
  */
 class CachedDownload extends DataObject implements Flushable
 {
