@@ -40,8 +40,8 @@ use Sunnysideup\Download\Api\CreateProtectedDownloadAsset;
  * @mixin FileLinkTracking
  * @mixin AssetControlExtension
  * @mixin SiteTreeLinkTracking
- * @mixin VersionedStateExtension
  * @mixin RecursivePublishable
+ * @mixin VersionedStateExtension
  * @mixin DataObjectExtension
  * @mixin FixBooleanSearchAsExtension
  */
