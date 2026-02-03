@@ -1,6 +1,6 @@
 <?php
 
-namespace Sunnysideup\Download\Control\Model;
+namespace Sunnysideup\Download\Model;
 
 use Closure;
 use SilverStripe\Assets\File;
@@ -60,13 +60,13 @@ class CachedDownload extends DataObject implements Flushable
 
     public static function flush()
     {
-        if(Security::database_is_ready() && DB::get_schema()->hasTable('CachedDownload')) {
-            if(Controller::has_curr() === false || get_class(Controller::curr()) === DevBuildController::class) {
+        if (Security::database_is_ready() && DB::get_schema()->hasTable('CachedDownload')) {
+            if (Controller::has_curr() === false || get_class(Controller::curr()) === DevBuildController::class) {
                 return;
             }
             $list = self::get();
             foreach ($list as $item) {
-                if($item->DeleteOnFlush) {
+                if ($item->DeleteOnFlush) {
                     $item->delete();
                 }
             }
@@ -170,7 +170,7 @@ class CachedDownload extends DataObject implements Flushable
 
             ]
         );
-        if(! $this->HasControlledAccess) {
+        if (! $this->HasControlledAccess) {
             $fields->removeByName('ControlledAccessFileID');
         }
 
@@ -180,10 +180,10 @@ class CachedDownload extends DataObject implements Flushable
     public function onBeforeWrite()
     {
         parent::onBeforeWrite();
-        if($this->IsExperired()) {
+        if ($this->IsExperired()) {
             $this->deleteFile();
         }
-        if($this->IsExperiredFile()) {
+        if ($this->IsExperiredFile()) {
             $this->deleteFile();
         }
     }
@@ -207,14 +207,14 @@ class CachedDownload extends DataObject implements Flushable
         $this->write();
         $path = $this->getFilePath(true);
         if ($path && file_exists($path)) {
-            if($this->ControlledAccessFile()->Name !== $fileNameToSave) {
+            if ($this->ControlledAccessFile()->Name !== $fileNameToSave) {
                 $this->deleteFile();
             } else {
                 return file_get_contents($path);
             }
         }
         $data = $callBackIfEmpty();
-        if($data) {
+        if ($data) {
             return $this->WarmCache($data, $fileNameToSave);
         } else {
             user_error('Could not create download file');
@@ -224,23 +224,23 @@ class CachedDownload extends DataObject implements Flushable
 
     public function WarmCache(string $data, ?string $fileNameToSave = ''): string
     {
-        if($this->HasControlledAccess) {
+        if ($this->HasControlledAccess) {
             // file should have already been created during callback!
             $file = CreateProtectedDownloadAsset::get_file_from_file_name($fileNameToSave);
-            if($file && $file->exists()) {
+            if ($file && $file->exists()) {
                 // all done
             } else {
                 $file = CreateProtectedDownloadAsset::register_download_asset_from_string($data, $fileNameToSave);
             }
-            if($file && $file->exists()) {
+            if ($file && $file->exists()) {
                 $this->ControlledAccessFileID = $file->ID;
                 $this->write();
             }
             return $data;
         } else {
             $filePath = $this->getFilePath();
-            if($filePath) {
-                if($this->createDirRecursively(dirname($filePath))) {
+            if ($filePath) {
+                if ($this->createDirRecursively(dirname($filePath))) {
                     file_put_contents($filePath, $data);
                     return $data;
                 }
@@ -263,10 +263,10 @@ class CachedDownload extends DataObject implements Flushable
 
     public function IsExperiredFile(?string $path = ''): bool
     {
-        if(! $path) {
+        if (! $path) {
             $path = $this->getFilePath();
         }
-        if(file_exists($path) && is_file($path)) {
+        if (file_exists($path) && is_file($path)) {
             $maxAgeInSeconds = ($this->MaxAgeInMinutes ?: $this->Config()->max_age_in_minutes) * 60;
             $maxCacheAge = strtotime('now') - $maxAgeInSeconds;
             $timeChange = filemtime($path);
@@ -284,7 +284,7 @@ class CachedDownload extends DataObject implements Flushable
     public function getFileLastUpdated(): string
     {
         $path = $this->getFilePath();
-        if($path) {
+        if ($path) {
             return date('Y-m-d H:i', filemtime($path));
         }
         return 'no date';
@@ -293,7 +293,7 @@ class CachedDownload extends DataObject implements Flushable
     public function getSizeOfFile(): string
     {
         $path = $this->getFilePath();
-        if($path) {
+        if ($path) {
             return $this->formatFileSize(filesize($path));
         }
         return 'empty';
@@ -320,11 +320,11 @@ class CachedDownload extends DataObject implements Flushable
     public function deleteFile()
     {
         $path = $this->getFilePath();
-        if($path && file_exists($path) && is_file($path)) {
+        if ($path && file_exists($path) && is_file($path)) {
             unlink($path);
         }
         $file = $this->ControlledAccessFile();
-        if($file && $file->exists()) {
+        if ($file && $file->exists()) {
             $file->doArchive();
         }
         // do not repeat...
@@ -354,11 +354,11 @@ class CachedDownload extends DataObject implements Flushable
     protected function getFilePath(?bool $alsoCheckForCanView = false): string
     {
         $path = '';
-        if($this->HasControlledAccess) {
-            if($this->ControlledAccessFileID) {
+        if ($this->HasControlledAccess) {
+            if ($this->ControlledAccessFileID) {
                 $file = $this->ControlledAccessFile();
-                if($file && $file->exists()) {
-                    if($alsoCheckForCanView === false || $file->canView()) {
+                if ($file && $file->exists()) {
+                    if ($alsoCheckForCanView === false || $file->canView()) {
                         $path = FilePathCalculator::get_path($file);
                     }
                 }
@@ -368,5 +368,4 @@ class CachedDownload extends DataObject implements Flushable
         }
         return $path;
     }
-
 }
