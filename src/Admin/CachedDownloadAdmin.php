@@ -3,7 +3,7 @@
 namespace Sunnysideup\Download\Admin;
 
 use SilverStripe\Admin\ModelAdmin;
-use Sunnysideup\Download\Control\Model\CachedDownload;
+use Sunnysideup\Download\Model\CachedDownload;
 
 /**
  * Class \Sunnysideup\Download\Admin\CachedDownloadAdmin
@@ -18,5 +18,4 @@ class CachedDownloadAdmin extends ModelAdmin
     private static $url_segment = 'downloads';
 
     private static $menu_title = 'Downloads';
-
 }

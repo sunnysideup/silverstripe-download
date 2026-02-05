@@ -10,9 +10,10 @@ use SilverStripe\Control\Middleware\HTTPCacheControlMiddleware;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\View\SSViewer;
-use Sunnysideup\Download\Control\Model\CachedDownload;
+use Sunnysideup\Download\Model\CachedDownload;
 
-abstract /**
+abstract
+/**
  * Class \Sunnysideup\Download\Control\DownloadFile
  *
  */

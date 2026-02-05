@@ -26,7 +26,7 @@ use Sunnysideup\Download\Api\FilePathCalculator;
 use Sunnysideup\Download\Api\CreateProtectedDownloadAsset;
 
 /**
- * Class \Sunnysideup\Download\Control\Model\CachedDownload
+ * Class \Sunnysideup\Download\Model\CachedDownload
  *
  * @property int $Version
  * @property ?string $Title
