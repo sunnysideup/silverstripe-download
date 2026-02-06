@@ -198,8 +198,6 @@ class CachedDownload extends DataObject implements Flushable
      * Returns file details.
      * If the cache is expired, it redoes (warms) the cache.
      * Otherwise straight from the cached file
-     *
-     * @return string
      */
     public function getData(callable $callBackIfEmpty, string $fileNameToSave): string
     {
@@ -239,7 +237,7 @@ class CachedDownload extends DataObject implements Flushable
             return $data;
         } else {
             $filePath = $this->getFilePath();
-            if ($filePath) {
+            if ($filePath !== '' && $filePath !== '0') {
                 if ($this->createDirRecursively(dirname($filePath))) {
                     file_put_contents($filePath, $data);
                     return $data;
@@ -284,7 +282,7 @@ class CachedDownload extends DataObject implements Flushable
     public function getFileLastUpdated(): string
     {
         $path = $this->getFilePath();
-        if ($path) {
+        if ($path !== '' && $path !== '0') {
             return date('Y-m-d H:i', filemtime($path));
         }
         return 'no date';
@@ -293,7 +291,7 @@ class CachedDownload extends DataObject implements Flushable
     public function getSizeOfFile(): string
     {
         $path = $this->getFilePath();
-        if ($path) {
+        if ($path !== '' && $path !== '0') {
             return $this->formatFileSize(filesize($path));
         }
         return 'empty';
@@ -357,10 +355,8 @@ class CachedDownload extends DataObject implements Flushable
         if ($this->HasControlledAccess) {
             if ($this->ControlledAccessFileID) {
                 $file = $this->ControlledAccessFile();
-                if ($file && $file->exists()) {
-                    if ($alsoCheckForCanView === false || $file->canView()) {
-                        $path = FilePathCalculator::get_path($file);
-                    }
+                if ($file && $file->exists() && ($alsoCheckForCanView === false || $file->canView())) {
+                    $path = FilePathCalculator::get_path($file);
                 }
             }
         } else {

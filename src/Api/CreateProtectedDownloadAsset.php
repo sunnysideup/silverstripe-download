@@ -77,11 +77,10 @@ class CreateProtectedDownloadAsset
     public static function get_file_from_file_name(string $name): ?File
     {
         $folder = self::get_protected_download_files_folder();
-        $file = File::get()
+
+        return File::get()
             ->filter(['Name' => $name, 'ParentID' => $folder->ID])
             ->first();
-
-        return $file;
     }
 
     protected static function protect_file_or_folder_and_write($fileOrFolder, ?array $additionalValues = [])

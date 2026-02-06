@@ -55,8 +55,6 @@ class DownloadFile extends Controller
 
     /**
      * gets the file data from cache or live
-     *
-     * @return string
      */
     protected function getFileData(): string
     {
@@ -79,8 +77,6 @@ class DownloadFile extends Controller
 
     /**
      * function (closure) that runs when there is nothing saved on file.
-     *
-     * @return callable
      */
     protected function getCallbackToCreateDownloadFile(): callable
     {

@@ -16,9 +16,6 @@ class FilePathCalculator
 
     /**
      * returns the full path to the file
-     *
-     * @param File $file
-     * @return string
      */
     public static function get_path(File $file): string
     {
