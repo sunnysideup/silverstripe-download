@@ -7,7 +7,6 @@ use Sunnysideup\Download\Model\CachedDownload;
 
 /**
  * Class \Sunnysideup\Download\Admin\CachedDownloadAdmin
- *
  */
 class CachedDownloadAdmin extends ModelAdmin
 {

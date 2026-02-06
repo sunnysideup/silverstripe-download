@@ -6,12 +6,12 @@ use SilverStripe\Assets\File;
 use SilverStripe\Assets\Folder;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Extensible;
+use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Security\InheritedPermissions;
 use SilverStripe\Security\Permission;
 use SilverStripe\Versioned\Versioned;
-use SilverStripe\Core\Extensible;
-use SilverStripe\Core\Config\Configurable;
-use SilverStripe\Core\Injector\Injectable;
 
 class CreateProtectedDownloadAsset
 {
@@ -40,9 +40,12 @@ class CreateProtectedDownloadAsset
         rename($fromPath, $tmpPath);
 
         $folder = self::get_protected_download_files_folder();
-        $filter = ['Name' => $fileNameToSave, 'ParentID' => $folder->ID];
+        $filter = [
+            'Name' => $fileNameToSave,
+            'ParentID' => $folder->ID,
+        ];
         $file = File::get()->filter($filter)->first();
-        if (!$file || ! $file->exists()) {
+        if (! $file || ! $file->exists()) {
             $file = File::create();
             $file->setFromLocalFile($tmpPath, $fileNameToSave);
             $file->writeToStage(Versioned::DRAFT);
@@ -61,9 +64,12 @@ class CreateProtectedDownloadAsset
     public static function register_download_asset_from_string(string $string, string $fileNameToSave): File
     {
         $folder = self::get_protected_download_files_folder();
-        $filter = ['Name' => $fileNameToSave, 'ParentID' => $folder->ID];
+        $filter = [
+            'Name' => $fileNameToSave,
+            'ParentID' => $folder->ID,
+        ];
         $file = File::get()->filter($filter)->first();
-        if (!$file || ! $file->exists()) {
+        if (! $file || ! $file->exists()) {
             $file = File::create();
             $file->setFromString($string, $file->generateFilename());
             $file->writeToStage(Versioned::DRAFT);
@@ -79,7 +85,10 @@ class CreateProtectedDownloadAsset
         $folder = self::get_protected_download_files_folder();
 
         return File::get()
-            ->filter(['Name' => $name, 'ParentID' => $folder->ID])
+            ->filter([
+                'Name' => $name,
+                'ParentID' => $folder->ID,
+            ])
             ->first();
     }
 

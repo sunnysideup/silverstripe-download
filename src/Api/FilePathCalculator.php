@@ -4,8 +4,8 @@ namespace Sunnysideup\Download\Api;
 
 use SilverStripe\Assets\File;
 use SilverStripe\Control\Controller;
-use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 
 class FilePathCalculator
@@ -20,16 +20,15 @@ class FilePathCalculator
     public static function get_path(File $file): string
     {
         $path = Controller::join_links(ASSETS_PATH, $file->getFilename());
-        if(! file_exists($path)) {
+        if (! file_exists($path)) {
             $path = Controller::join_links(PUBLIC_PATH, $file->getSourceURL(true));
-            if(! file_exists($path)) {
+            if (! file_exists($path)) {
                 $path = str_replace('public/assets/', 'public/assets/.protected/', $path);
-                if(! file_exists($path)) {
+                if (! file_exists($path)) {
                     $path = '';
                 }
             }
         }
         return $path;
     }
-
 }

@@ -5,9 +5,7 @@ namespace Sunnysideup\Download\Control;
 use SilverStripe\Control\ContentNegotiator;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPRequest;
-use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\Middleware\HTTPCacheControlMiddleware;
-use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\View\SSViewer;
 use Sunnysideup\Download\Model\CachedDownload;
@@ -15,7 +13,6 @@ use Sunnysideup\Download\Model\CachedDownload;
 abstract
 /**
  * Class \Sunnysideup\Download\Control\DownloadFile
- *
  */
 class DownloadFile extends Controller
 {
@@ -25,7 +22,6 @@ class DownloadFile extends Controller
     private static $allowed_actions = [
         'index' => true,
     ];
-
 
     /**
      * returns the file.
@@ -99,7 +95,6 @@ class DownloadFile extends Controller
     {
         return null; // set to null to use default
     }
-
 
     protected function getContentType(): string
     {

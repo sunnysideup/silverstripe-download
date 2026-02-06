@@ -2,12 +2,9 @@
 
 namespace Sunnysideup\Download\Model;
 
-use Closure;
 use SilverStripe\Assets\File;
-use SilverStripe\Assets\Folder;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
-use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Flushable;
 use SilverStripe\Dev\DevBuildController;
 use SilverStripe\Forms\LiteralField;
@@ -16,14 +13,10 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\FieldType\DBField;
-use SilverStripe\ORM\FieldType\DBHTMLVarchar;
-use SilverStripe\Security\Group;
-use SilverStripe\Security\InheritedPermissions;
-use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
 use SilverStripe\Versioned\Versioned;
-use Sunnysideup\Download\Api\FilePathCalculator;
 use Sunnysideup\Download\Api\CreateProtectedDownloadAsset;
+use Sunnysideup\Download\Api\FilePathCalculator;
 
 /**
  * Class \Sunnysideup\Download\Model\CachedDownload
@@ -73,11 +66,10 @@ class CachedDownload extends DataObject implements Flushable
         }
     }
 
-
     public static function inst(string $myLink, ?string $title = ''): self
     {
         $obj = self::get()->filter(['MyLink' => $myLink])->first();
-        if (!$obj) {
+        if (! $obj) {
             $obj = self::create();
         }
         $obj->MyLink = $myLink;
@@ -115,7 +107,6 @@ class CachedDownload extends DataObject implements Flushable
         'ControlledAccessFile',
     ];
 
-
     //######################
     //## Names Section
     //######################
@@ -133,7 +124,6 @@ class CachedDownload extends DataObject implements Flushable
     private static $casting = [
         'IsExpired.Nice' => 'Boolean',
     ];
-
 
     public function getCMSFields()
     {
@@ -193,7 +183,6 @@ class CachedDownload extends DataObject implements Flushable
         return DBField::create_field(DBDatetime::class, $this->LastEdited)->ago();
     }
 
-
     /**
      * Returns file details.
      * If the cache is expired, it redoes (warms) the cache.
@@ -250,14 +239,12 @@ class CachedDownload extends DataObject implements Flushable
         return $data;
     }
 
-
     public function IsExperired(): bool
     {
         $maxAgeInSeconds = ($this->MaxAgeInMinutes ?: $this->Config()->max_age_in_minutes) * 60;
         $maxCacheAge = strtotime('now') - $maxAgeInSeconds;
         return $this->LastEdited && strtotime((string) $this->LastEdited) < $maxCacheAge;
     }
-
 
     public function IsExperiredFile(?string $path = ''): bool
     {
@@ -278,7 +265,6 @@ class CachedDownload extends DataObject implements Flushable
         return Controller::join_links(Director::absoluteBaseURL(), $this->MyLink);
     }
 
-
     public function getFileLastUpdated(): string
     {
         $path = $this->getFilePath();
@@ -296,8 +282,6 @@ class CachedDownload extends DataObject implements Flushable
         }
         return 'empty';
     }
-
-
 
     public function onBeforeDelete()
     {
@@ -338,12 +322,12 @@ class CachedDownload extends DataObject implements Flushable
         $units = ['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
         $factor = floor(log($bytes, 1024));
 
-        return sprintf("%.2f %s", $bytes / pow(1024, $factor), $units[$factor - 1]);
+        return sprintf('%.2f %s', $bytes / pow(1024, $factor), $units[$factor - 1]);
     }
 
     protected function createDirRecursively(string $path, int $permissions = 0755): bool
     {
-        if (!is_dir($path)) {
+        if (! is_dir($path)) {
             return mkdir($path, $permissions, true);
         }
         return true;
