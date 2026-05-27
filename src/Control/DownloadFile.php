@@ -13,6 +13,7 @@ use Sunnysideup\Download\Model\CachedDownload;
 abstract
 /**
  * Class \Sunnysideup\Download\Control\DownloadFile
+ *
  */
 class DownloadFile extends Controller
 {
