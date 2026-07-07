@@ -29,6 +29,7 @@ class FilePathCalculator
                 }
             }
         }
+
         return $path;
     }
 }

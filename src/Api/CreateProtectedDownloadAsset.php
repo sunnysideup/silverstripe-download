@@ -33,10 +33,11 @@ class CreateProtectedDownloadAsset
     public static function register_download_asset_from_local_path(string $fromPath, string $fileNameToSave): File
     {
         // only works if it is in assets folder!s
-        $tmpPath = Controller::join_links(ASSETS_PATH, rand() . '-' . basename($fromPath));
+        $tmpPath = Controller::join_links(ASSETS_PATH, random_int(0, mt_getrandmax()) . '-' . basename($fromPath));
         if (file_exists($tmpPath)) {
             unlink($tmpPath);
         }
+
         rename($fromPath, $tmpPath);
 
         $folder = self::get_protected_download_files_folder();
@@ -56,6 +57,7 @@ class CreateProtectedDownloadAsset
             // }
             // rename($tmpPath, $finalPath);
         }
+
         self::protect_file_or_folder_and_write($file, $filter);
 
         return $file;
@@ -75,6 +77,7 @@ class CreateProtectedDownloadAsset
             $file->writeToStage(Versioned::DRAFT);
             $file->publishRecursive();
         }
+
         self::protect_file_or_folder_and_write($file, $filter);
 
         return $file;
@@ -101,6 +104,7 @@ class CreateProtectedDownloadAsset
         foreach ($additionalValues as $key => $value) {
             $fileOrFolder->{$key} = $value;
         }
+
         $fileOrFolder->writeToStage(Versioned::DRAFT);
         $fileOrFolder->publishRecursive();
         return $fileOrFolder;
