@@ -29,14 +29,14 @@ use Sunnysideup\Download\Api\FilePathCalculator;
  * @property bool $HasControlledAccess
  * @property int $ControlledAccessFileID
  * @method File ControlledAccessFile()
- * @mixin Versioned
- * @mixin FileLinkTracking
  * @mixin AssetControlExtension
- * @mixin SiteTreeLinkTracking
- * @mixin RecursivePublishable
- * @mixin VersionedStateExtension
  * @mixin DataObjectExtension
+ * @mixin FileLinkTracking
  * @mixin FixBooleanSearchAsExtension
+ * @mixin RecursivePublishable
+ * @mixin SiteTreeLinkTracking
+ * @mixin Versioned
+ * @mixin VersionedStateExtension
  */
 class CachedDownload extends DataObject implements Flushable
 {
