@@ -77,9 +77,7 @@ class DownloadFile extends Controller
      */
     protected function getCallbackToCreateDownloadFile(): callable
     {
-        return function () {
-            return $this->renderWith(static::class);
-        };
+        return fn() => $this->renderWith(static::class);
     }
 
     protected function getMaxAgeInMinutes(): ?int

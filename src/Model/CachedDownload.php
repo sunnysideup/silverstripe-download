@@ -2,11 +2,11 @@
 
 namespace Sunnysideup\Download\Model;
 
+use Override;
 use SilverStripe\Assets\File;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Flushable;
-use SilverStripe\Dev\DevBuildController;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
@@ -54,9 +54,10 @@ class CachedDownload extends DataObject implements Flushable
     public static function flush()
     {
         if (Security::database_is_ready() && DB::get_schema()->hasTable('CachedDownload')) {
-            if (Controller::has_curr() === false || get_class(Controller::curr()) === DevBuildController::class) {
+            if (!Controller::curr() instanceof Controller || Controller::curr()::class === DevBuildController::class) {
                 return;
             }
+
             $list = self::get();
             foreach ($list as $item) {
                 if ($item->DeleteOnFlush) {
@@ -72,6 +73,7 @@ class CachedDownload extends DataObject implements Flushable
         if (! $obj) {
             $obj = self::create();
         }
+
         $obj->MyLink = $myLink;
         $obj->Title = $title ?: $myLink;
         $obj->write();
@@ -125,6 +127,7 @@ class CachedDownload extends DataObject implements Flushable
         'IsExpired.Nice' => 'Boolean',
     ];
 
+    #[Override]
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
@@ -167,12 +170,14 @@ class CachedDownload extends DataObject implements Flushable
         return $fields;
     }
 
-    public function onBeforeWrite()
+    #[Override]
+    protected function onBeforeWrite()
     {
         parent::onBeforeWrite();
         if ($this->IsExperired()) {
             $this->deleteFile();
         }
+
         if ($this->IsExperiredFile()) {
             $this->deleteFile();
         }
@@ -200,6 +205,7 @@ class CachedDownload extends DataObject implements Flushable
                 return file_get_contents($path);
             }
         }
+
         $data = $callBackIfEmpty();
         if ($data) {
             return $this->WarmCache($data, $fileNameToSave);
@@ -219,10 +225,12 @@ class CachedDownload extends DataObject implements Flushable
             } else {
                 $file = CreateProtectedDownloadAsset::register_download_asset_from_string($data, $fileNameToSave);
             }
+
             if ($file && $file->exists()) {
                 $this->ControlledAccessFileID = $file->ID;
                 $this->write();
             }
+
             return $data;
         } else {
             $filePath = $this->getFilePath();
@@ -236,6 +244,7 @@ class CachedDownload extends DataObject implements Flushable
                 return $data;
             }
         }
+
         return $data;
     }
 
@@ -251,12 +260,14 @@ class CachedDownload extends DataObject implements Flushable
         if (! $path) {
             $path = $this->getFilePath();
         }
+
         if (file_exists($path) && is_file($path)) {
             $maxAgeInSeconds = ($this->MaxAgeInMinutes ?: $this->Config()->max_age_in_minutes) * 60;
             $maxCacheAge = strtotime('now') - $maxAgeInSeconds;
             $timeChange = filemtime($path);
             return $timeChange < $maxCacheAge;
         }
+
         return false;
     }
 
@@ -271,6 +282,7 @@ class CachedDownload extends DataObject implements Flushable
         if ($path !== '' && $path !== '0') {
             return date('Y-m-d H:i', filemtime($path));
         }
+
         return 'no date';
     }
 
@@ -280,20 +292,24 @@ class CachedDownload extends DataObject implements Flushable
         if ($path !== '' && $path !== '0') {
             return $this->formatFileSize(filesize($path));
         }
+
         return 'empty';
     }
 
-    public function onBeforeDelete()
+    #[Override]
+    protected function onBeforeDelete()
     {
         parent::onBeforeDelete();
         $this->deleteFile();
     }
 
+    #[Override]
     public function canEdit($member = null)
     {
         return false;
     }
 
+    #[Override]
     public function canCreate($member = null, $context = [])
     {
         return false;
@@ -305,10 +321,12 @@ class CachedDownload extends DataObject implements Flushable
         if ($path && file_exists($path) && is_file($path)) {
             unlink($path);
         }
+
         $file = $this->ControlledAccessFile();
         if ($file && $file->exists()) {
             $file->doArchive();
         }
+
         // do not repeat...
         DB::query('UPDATE "CachedDownload" SET "ControlledAccessFileID" = 0 WHERE "ID" = ' . $this->ID);
     }
@@ -322,7 +340,7 @@ class CachedDownload extends DataObject implements Flushable
         $units = ['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
         $factor = floor(log($bytes, 1024));
 
-        return sprintf('%.2f %s', $bytes / pow(1024, $factor), $units[$factor - 1]);
+        return sprintf('%.2f %s', $bytes / 1024 ** $factor, $units[$factor - 1]);
     }
 
     protected function createDirRecursively(string $path, int $permissions = 0755): bool
@@ -330,6 +348,7 @@ class CachedDownload extends DataObject implements Flushable
         if (! is_dir($path)) {
             return mkdir($path, $permissions, true);
         }
+
         return true;
     }
 
@@ -346,6 +365,7 @@ class CachedDownload extends DataObject implements Flushable
         } else {
             $path = self::file_path($this->MyLink);
         }
+
         return $path;
     }
 }
