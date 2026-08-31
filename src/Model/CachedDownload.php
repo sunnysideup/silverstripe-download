@@ -79,7 +79,7 @@ class CachedDownload extends DataObject implements Flushable
         return $obj;
     }
 
-    private static $max_age_in_minutes = 60;
+    private static $max_age_in_minutes = 10;
 
     private static $table_name = 'CachedDownload';
 
