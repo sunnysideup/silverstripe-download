@@ -54,12 +54,9 @@ class CachedDownload extends DataObject implements Flushable
     public static function flush()
     {
         if (Security::database_is_ready() && DB::get_schema()->hasTable('CachedDownload')) {
-            if (Controller::has_curr() === false || get_class(Controller::curr()) === DevBuildController::class) {
-                return;
-            }
             $list = self::get();
             foreach ($list as $item) {
-                if ($item->DeleteOnFlush) {
+                if ($item->DeleteOnFlush || $item->IsExpiredFile()) {
                     $item->delete();
                 }
             }
@@ -118,11 +115,13 @@ class CachedDownload extends DataObject implements Flushable
     private static $summary_fields = [
         'Title' => 'Name',
         'MyLink' => 'Link',
+        'SizeOfFile' => 'Size of File',
         'HasControlledAccess.Nice' => 'Controlled Access',
     ];
 
     private static $casting = [
-        'IsExpired.Nice' => 'Boolean',
+        'IsExpired' => 'Boolean',
+        'SizeOfFile' => 'String',
     ];
 
     public function getCMSFields()
@@ -173,7 +172,7 @@ class CachedDownload extends DataObject implements Flushable
         if ($this->IsExperired()) {
             $this->deleteFile();
         }
-        if ($this->IsExperiredFile()) {
+        if ($this->IsExpiredFile()) {
             $this->deleteFile();
         }
     }
@@ -246,7 +245,7 @@ class CachedDownload extends DataObject implements Flushable
         return $this->LastEdited && strtotime((string) $this->LastEdited) < $maxCacheAge;
     }
 
-    public function IsExperiredFile(?string $path = ''): bool
+    public function IsExpiredFile(?string $path = ''): bool
     {
         if (! $path) {
             $path = $this->getFilePath();
@@ -257,7 +256,7 @@ class CachedDownload extends DataObject implements Flushable
             $timeChange = filemtime($path);
             return $timeChange < $maxCacheAge;
         }
-        return false;
+        return true;
     }
 
     public function getAbsoluteLink(): string
